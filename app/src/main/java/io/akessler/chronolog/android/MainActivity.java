@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
         loadTimeEntries();
+        setupTimeToggle();
 
         rvTimeEntries = findViewById(R.id.rvTimeEntries);
         rvTimeEntries.setAdapter(new TimeEntryAdapter(timeEntries));
@@ -55,9 +56,14 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TimeEntry entry = new TimeEntry("Chronolog PoC", System.currentTimeMillis());
-                entry.key = mDatabase.child("times").push().getKey();
-                mDatabase.child("times").child(entry.key).setValue(entry);
+                if(toggle) {
+                    mDatabase.child("toggle").child("endTime").setValue(System.currentTimeMillis());
+                }
+                else {
+                    TimeEntry entry = new TimeEntry("Chronolog Test", System.currentTimeMillis());
+    //                    entry.key = mDatabase.child("times").push().getKey();
+                    mDatabase.child("toggle").setValue(entry);
+                }
             }
         });
 
@@ -95,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Adding child, " + dataSnapshot.getKey());
                 TimeEntry entry = dataSnapshot.getValue(TimeEntry.class);
                 entry.key = dataSnapshot.getKey();
-                timeEntries.add(entry);
+                timeEntries.add(0, entry);
                 rvTimeEntries.getAdapter().notifyDataSetChanged();
             }
 
@@ -117,6 +123,35 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+    }
+
+    private boolean toggle;
+    private void setupTimeToggle() {
+        mDatabase.child("toggle").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                TimeEntry entry = dataSnapshot.getValue(TimeEntry.class);
+                if(entry.endTime == -1) { // could just check for -1
+                    // means this entry is still being timed or was just created (toggle on)
+                    toggle = true;
+                    Log.d("TOGGLE", "TOGGLE ON");
+                }
+                else {
+                    // means this entry is no longer being timed (toggle off)
+                    if(toggle) { // toggle will be false on first load
+                        entry.key = mDatabase.child("times").push().getKey();
+                        mDatabase.child("times").child(entry.key).setValue(entry);
+                    }
+                    toggle = false;
+                    Log.d("TOGGLE", "TOGGLE OFF");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // TODO Handle failed listener
             }
         });
     }

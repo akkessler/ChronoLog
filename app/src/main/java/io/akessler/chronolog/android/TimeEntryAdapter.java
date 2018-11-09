@@ -40,7 +40,8 @@ public class TimeEntryAdapter extends RecyclerView.Adapter<TimeEntryAdapter.View
 
             long duration = entry.endTime - entry.startTime;
             // what about days? should you really be timing for days though?
-            String durationText = new SimpleDateFormat("hh:mm:ss").format(new Date(duration));
+            // FIXME There is a bug with hours -- look at Period and Duration (upgrade to API 26?)
+            String durationText = new SimpleDateFormat("mm:ss").format(new Date(duration));
             txtDuration.setText(durationText);
 
             final String key = entry.key;
