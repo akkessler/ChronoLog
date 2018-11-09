@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         loadTimeEntries();
 
         rvTimeEntries = findViewById(R.id.rvTimeEntries);
-        rvTimeEntries.setAdapter(new TimeEntryAdapter(this, timeEntries));
+        rvTimeEntries.setAdapter(new TimeEntryAdapter(timeEntries));
         rvTimeEntries.setLayoutManager(new LinearLayoutManager(this));
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 Log.d(TAG, "Adding child, " + dataSnapshot.getKey());
                 TimeEntry entry = dataSnapshot.getValue(TimeEntry.class);
+                entry.key = dataSnapshot.getKey();
                 timeEntries.add(entry);
                 rvTimeEntries.getAdapter().notifyDataSetChanged();
             }
